@@ -11,12 +11,12 @@
     - organization_name: royproject
   tasks:
 
-  - name: install EPEL Repo
+  - name: Install EPEL Repo
     yum:
       name: epel-release
       state: present
 
-  - name: Ставим кучу пакетов
+  - name: Ставим пакеты через YUM для дела и удобства
     yum:
       name: "{{ packages }}"
       state: present
@@ -24,69 +24,49 @@
       packages:
       - nano
       - mc
-#      - ansible    
       - python-pip
       - python-devel
       - libselinux-python
 
-#  - name: Install python 3.6 and pip3
-#    yum:
-#      name:
-#        - python36
- #       - libselinux-python
-#        - ansible
-#      state: present
-
-  - name: Install SELinux for Python 3
+  - name: Ставим пакеты через PIP
     pip:
-      name: cryptography
+      name: "{{ packages }}"
       state: present
+    vars:
+      packages:
+      - cryptography
+      - pyOpenSSL
 
-  - name: PIP install ...
-    pip: 
-      name: pyOpenSSL
-      state: present
-
-
-  - name: Create Folder
+  - name: Сделаем директорию куда положим готовые сертификаты и ключи
     file: 
-      path: /root/certificates
+      path: /home/vagrant/cert
       owner: root 
       group: root 
       mode: 0755 
       state: directory
 
-
-
-  - name: Generate an OpenSSL private key
+  - name: Генерируем приватный ключ OpenSSL
     openssl_privatekey:
-      path: "/root/certificates/{{ server_hostname }}_privkey.pem"
+      path: "/home/vagrant/cert/{{ server_hostname }}_privkey.pem"
       size: "{{ key_size }}"
       type: "{{ key_type }}"
       backup: yes
-  - name: Generate an OpenSSL Certificate Signing Request with Subject information
+      
+  - name: Генерируем OpenSSL сертификат с данными из vars
     openssl_csr:
-      path: "/root/certificates/{{ server_hostname }}.csr"
-      privatekey_path: "/root/certificates/{{ server_hostname }}_privkey.pem"
+      path: "/home/vagrant/cert/{{ server_hostname }}.csr"
+      privatekey_path: "/home/vagrant/cert/{{ server_hostname }}_privkey.pem"
       country_name: "{{ country_name }}"
       organization_name: "{{ organization_name }}"
       email_address: "{{ email_address }}"
       common_name: "{{ server_hostname }}"
-  - name: Generate a Self Signed OpenSSL certificate
+      
+  - name: Генерируем самоподписанный OpenSSL сертификат
     openssl_certificate:
-      path: "/root/certificates/{{ server_hostname }}_cert.pem"
-      privatekey_path: "/root/certificates/{{ server_hostname }}_privkey.pem"
-      csr_path: "/root/certificates/{{ server_hostname }}.csr"
+      path: "/home/vagrant/cert/{{ server_hostname }}_cert.pem"
+      privatekey_path: "/home/vagrant/cert/{{ server_hostname }}_privkey.pem"
+      csr_path: "/home/vagrant/cert/{{ server_hostname }}.csr"
       provider: selfsigned
-
-
-
-#  - name: Generate an OpenSSL private key
-#    openssl_privatekey:
-#      path: "./certificates/{{ server_hostname }}_privkey.pem"
-#      size: "{{ key_size }}"
-#      type: "{{ key_type }}"
-#      backup: yes
 
 
 
