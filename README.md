@@ -1,6 +1,6 @@
 # ansible_tools
 
-## cert_create
+## certcreate
 Схема создания самоподписанных сертификатов OpenSSL с использованием команд ansible
 
 ##
